@@ -200,4 +200,190 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.stroke();
   }
 
+  // scheduling helper
+  function enqueueReady(p){ if(!readyQueue.includes(p)) readyQueue.push(p); }
+  function removeFromReady(p){ const i = readyQueue.indexOf(p); if(i>=0) readyQueue.splice(i,1); }
+
+  function tick(){
+    processes.forEach(p => { if(p.arrival === simTime){ if(algorithm === 'FCFS' || algorithm === 'RR') enqueueReady(p); } });
+
+    if(algorithm === 'FCFS' || algorithm === 'SJF'){
+      if(!current){
+        if(algorithm === 'FCFS'){
+          if(readyQueue.length === 0){
+            processes.forEach(p=>{ if(p.arrival <= simTime && p.remaining>0 && !p.completedAt && !readyQueue.includes(p)) enqueueReady(p); });
+          }
+          current = readyQueue.shift() || null;
+        } else {
+          const cand = processes.filter(p => p.arrival <= simTime && p.remaining>0 && !p.completedAt);
+          if(cand.length){
+            cand.sort((a,b)=> (a.burst - b.burst) || (a.arrival - b.arrival) || (a.pid - b.pid));
+            current = cand[0];
+            removeFromReady(current);
+          }
+        }
+        if(current){ if(current.startedAt === null) current.startedAt = simTime; current.segments.push({start: simTime, end: null}); }
+      }
+      if(current){
+        current.remaining -= 1;
+        if(current.remaining <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; current.completedAt = simTime + 1; current = null; }
+      }
+
+    } else if(algorithm === 'SRTF'){
+      const candidates = processes.filter(p => p.arrival <= simTime && p.remaining > 0 && !p.completedAt);
+      if(candidates.length){
+        candidates.sort((a,b)=> (a.remaining - b.remaining) || (a.arrival - b.arrival) || (a.pid - b.pid));
+        const chosen = candidates[0];
+        if(current !== chosen){
+          if(current){
+            const seg = current.segments[current.segments.length - 1]; if(seg && seg.end === null) seg.end = simTime;
+          }
+          current = chosen; if(current.startedAt === null) current.startedAt = simTime; current.segments.push({start: simTime, end: null});
+        }
+      } else {
+        if(current){ const seg = current.segments[current.segments.length - 1]; if(seg && seg.end === null) seg.end = simTime; }
+        current = null;
+      }
+      if(current){
+        current.remaining -= 1;
+        if(current.remaining <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; current.completedAt = simTime + 1; current = null; }
+      }
+
+    } else if(algorithm === 'RR'){
+      processes.forEach(p => { if(p.arrival === simTime) enqueueReady(p); });
+      if(!current){
+        current = readyQueue.shift() || null;
+        if(current){ if(current.startedAt === null) current.startedAt = simTime; current._rrCounter = current.quantum || parseInt(defaultQuantumEl.value || defaultQuantum,10); current.segments.push({start: simTime, end: null}); }
+      }
+      if(current){
+        current.remaining -= 1; current._rrCounter -= 1;
+        if(current.remaining <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; current.completedAt = simTime + 1; current._rrCounter = null; current = null; }
+        else if(current._rrCounter <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; enqueueReady(current); current._rrCounter = null; current = null; }
+      }
+    }
+
+    timeDisplay.textContent = `t = ${simTime}`;
+    currentProcPill.textContent = current ? `CPU: ${current.name} (PID:${current.pid}) Rem:${current.remaining}` : 'CPU: --';
+    renderReadyList(); renderHistory(); drawGantt();
+    simTime += 1;
+  }
+
+  function runSimulationInterval(){
+    if(simTimer) clearInterval(simTimer);
+    unitDuration = Math.max(80, parseInt(speedEl.value,10) || 800);
+    const step = () => {
+      unitBar.style.transition = `width ${unitDuration}ms linear`;
+      unitBar.style.width = '100%';
+      animTimer = setTimeout(()=> {
+        unitBar.style.transition = 'none'; unitBar.style.width = '0%';
+        tick();
+        const allDone = processes.every(p => p.remaining <= 0);
+        if(allDone){ stopSimulation(true); return; }
+      }, unitDuration - 10);
+    };
+    step();
+    simTimer = setInterval(step, unitDuration);
+  }
+
+ function stopSimulation(finished=false){
+  clearInterval(simTimer); simTimer = null;
+  clearTimeout(animTimer); animTimer = null;
+  isRunning = false; current = null;
+  renderReadyList(); renderHistory(); drawGantt();
+
+  if(finished){
+    showModal("Simulación Finalizada", "Todos los procesos fueron ejecutados. Presione Resetear para una nueva Operación :) ");
+  }
+}
+
+
+  // Events
+
+  // Eventos para limpiar tablas
+clearSampleBtn.addEventListener('click', () => {
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
+  processes = processes.filter(p => !p.isExample);
+  pidCounter = 1; // Opcional: reiniciar el contador si solo quedan manuales
+  renderProcTables();
+  renderLegend();
+  drawGantt();
+  showModal('Procesos Eliminados', 'Los procesos de **ejemplo** han sido eliminados.');
+});
+
+clearManualBtn.addEventListener('click', () => {
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
+  processes = processes.filter(p => p.isExample);
+  pidCounter = 1; // Opcional: reiniciar el contador para que los nuevos empiecen desde P1
+  renderProcTables();
+  renderLegend();
+  drawGantt();
+  showModal('Procesos Eliminados', 'Los procesos **manuales** han sido eliminados.');
+});
+
+ addBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  const name = pname.value.trim() || (`P${pidCounter}`);
+  const burst = parseInt(pburst.value,10) || 1;
+  const arrival = parseInt(parrival.value,10) || 0;
+  const q = pquantum && pquantum.value ? Math.max(1, parseInt(pquantum.value,10)) : null;
+  addProcess(name, burst, arrival, q, false);
+  pname.value = ''; pburst.value = '4'; parrival.value = '0'; if(pquantum) pquantum.value = '';
+});
+
+
+  addSampleBtn.addEventListener('click', ()=>{
+  processes = []; pidCounter = 1;
+  addProcess('A', 5, 0, null, true);
+  addProcess('B', 3, 1, null, true);
+  addProcess('C', 8, 2, null, true);
+  addProcess('D', 6, 3, null, true);
+  renderProcTables(); renderLegend();
+});
+
+const modal = document.getElementById('modal');
+const modalTitle = document.getElementById('modal-title');
+const modalMsg = document.getElementById('modal-message');
+const modalClose = document.getElementById('modal-close');
+modalClose.addEventListener('click', ()=> modal.classList.add('hidden'));
+
+function showModal(title, msg){
+  modalTitle.textContent = title;
+  modalMsg.textContent = msg;
+  modal.classList.remove('hidden');
+}
+
+  algorithmEl.addEventListener('change', ()=> { algorithm = algorithmEl.value; renderReadyList(); });
+
+  startBtn.addEventListener('click', ()=>{
+    if(isRunning) return;
+    if(processes.length === 0){ alert('Agrega al menos un proceso.'); return; }
+    processes.forEach(p => { p.remaining = p.burst; p.segments = []; p.startedAt = null; p.completedAt = null; p._rrCounter = null; });
+    processes.sort((a,b) => a.arrival - b.arrival || a.pid - b.pid);
+    simTime = 0; algorithm = algorithmEl.value; defaultQuantum = parseInt(defaultQuantumEl.value,10) || 2;
+    readyQueue = []; processes.forEach(p => { if(p.arrival === 0 && (algorithm==='FCFS'||algorithm==='RR')) enqueueReady(p); });
+    isRunning = true; runSimulationInterval();
+    addBtn.disabled = true; addSampleBtn.disabled = true; algorithmEl.disabled = true; startBtn.disabled = true;
+    console.log('Simulación iniciada. Algoritmo:', algorithm);
+  });
+
+  pauseBtn.addEventListener('click', ()=>{
+    if(!isRunning) return;
+    if(!simTimer){ runSimulationInterval(); pauseBtn.textContent = 'Pause'; console.log('Reanudar'); }
+    else { clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null; pauseBtn.textContent = 'Resume'; console.log('Pausada'); }
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null;
+    addBtn.disabled = false; addSampleBtn.disabled = false; algorithmEl.disabled = false; startBtn.disabled = false;
+    pauseBtn.textContent = 'Pause'; resetSimulationState();
+  });
+
+  // inicializar demo
+  addProcess('P1', 4, 0, null, true); 
+  addProcess('P2', 3, 2, null, true); 
+  addProcess('P3', 5, 4, null, true); 
+  renderProcTables(); 
+  renderLegend(); drawGantt(); window.addEventListener('resize', ()=> drawGantt());
+  console.log('Script cargado correctamente.');
+
   });
