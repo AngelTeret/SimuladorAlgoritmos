@@ -1,14 +1,12 @@
+/* Dracula Theme - Simulador de Procesos */
 :root {
     --bg: #282a36;
     --card: #343746;
     --text: #f8f8f2;
     --muted: #6272a4;
     --accent: #50fa7b;
-    /* Verde brillante */
     --accent2: #bd93f9;
-    /* Morado */
     --accent3: #ff79c6;
-    /* Rosa */
     --danger: #ff5555;
     font-family: "Segoe UI", Arial, sans-serif;
 }
@@ -306,4 +304,88 @@ canvas#gantt {
 .modal-content p {
     color: var(--muted);
     margin: 15px 0;
+}
+
+#efficiencyTable {
+    border: 1px solid var(--muted);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#efficiencyTable tr.highlight {
+    background: rgba(80, 250, 123, 0.2);
+    font-weight: bold;
+}
+
+.modal-content.success {
+    border: 2px solid var(--accent);
+    animation: pop 0.5s ease-out;
+}
+
+@keyframes pop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* 🧠 Historial de Algoritmos */
+.history-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+.history-list li {
+    background: var(--card);
+    border-left: 4px solid var(--accent);
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+#efficiencyTable tr.highlight {
+    background: rgba(80, 250, 123, 0.25);
+    font-weight: bold;
+}
+
+.history-list li {
+    background: var(--card);
+    border-left: 4px solid var(--accent);
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-list li::before {
+    content: "🧮";
+    margin-right: 6px;
+    opacity: 0.7;
+}
+
+
+.history-list li.highlight-best {
+    background: rgba(80, 250, 123, 0.15);
+    border-left: 4px solid #f1fa8c;
+    font-weight: bold;
+    color: #f1fa8c;
+    box-shadow: 0 2px 8px rgba(80, 250, 123, 0.3);
+}
+
+.history-list li.highlight-best::before {
+    content: "🏆";
+    margin-right: 6px;
+    opacity: 1;
 }
