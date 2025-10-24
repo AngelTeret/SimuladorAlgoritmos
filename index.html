@@ -15,7 +15,7 @@
       <p class="lead">Implementa FCFS, SJF, SRTF y Round Robin. (1 unidad = 5s conceptuales)</p>
     </header>
 
-
+    <!-- LEFT: controles -->
     <aside class="panel">
       <h3>Crear procesos</h3>
       <label>Nombre</label>
@@ -23,7 +23,7 @@
       <div class="row">
         <div style="flex:1">
           <label>Tiempo CPU (unidades)</label>
-          <input id="pburst" type="number" min="1" value="4">
+          <input id="pburst" type="number" min="1" value="3">
         </div>
         <div style="width:110px">
           <label>Llegada (unidad)</label>
@@ -38,7 +38,7 @@
       </div>
 
 
-     <h2>Procesos de ejemplo</h2>
+  <h2>Procesos de ejemplo</h2>
       <table class="proc-list" id="procTableExample">
         <thead>
           <tr><th>PID</th><th>Nombre</th><th>CPU</th><th>Llegada</th></tr>
@@ -55,7 +55,7 @@
         <tbody></tbody>
       </table>
 
-   <h2>Procesos agregados manualmente</h2>
+  <h2>Procesos agregados manualmente</h2>
       <table class="proc-list" id="procTableManual">
         <thead>
           <tr><th>PID</th><th>Nombre</th><th>CPU</th><th>Llegada</th></tr>
@@ -74,7 +74,7 @@
         <option value="RR">Round Robin (Expropiativo)</option>
       </select>
 
-
+      <!-- Modal Dracula -->
       <div id="modal" class="modal hidden">
         <div class="modal-content">
           <h3 id="modal-title">Proceso finalizado</h3>
@@ -88,7 +88,7 @@
       <input id="defaultQuantum" type="number" min="1" value="2">
 
       <label>Velocidad de simulación (ms por unidad)</label>
-      <input id="speed" type="number" min="100" value="800">
+      <input id="speed" type="number" min="100" value="500">
 
       <div class="footer-actions">
         <button id="startBtn" class="btn">Iniciar</button>
@@ -99,7 +99,7 @@
       <p class="note">____________________________________________________________</p>
     </aside>
 
-
+    <!-- RIGHT: visuals -->
     <main class="main-area">
       <div class="card topbar">
         <div class="now">
@@ -137,27 +137,29 @@
         </aside>
       </div>
 
-      <div class="card">
-    <h3>Historial / Métricas</h3>
-    <table class="history" id="historyTable">
-      <thead>
-        <tr>
-          <th>PID</th>
-          <th>Nombre</th>
-          <th>Llegada</th>
-          <th>Burst (CPU)</th>
-          <th>Inicio</th>
-          <th>Fin</th>
-          <th>Turnaround</th>
-          <th>Espera (Waiting)</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-</div>
-    </main>
-  </div>
+    <section class="card">
+  <h2>Historial de Algoritmos</h2>
+  <ul id="algorithmHistory" class="history-list"></ul>
+</section>
 
+  <section class="card">
+  <h2>Tabla de Eficiencia</h2>
+  <table id="efficiencyTable" class="history">
+    <thead>
+      <tr>
+        <th>Proceso</th>
+        <th>Instante de Llegada (ti)</th>
+        <th>Tiempo en CPU (t)</th>
+        <th>Instante de Finalización (tf)</th>
+        <th>Tiempo de Retorno (T=tf−ti)</th>
+        <th>Tiempo de Espera (Te=T−t)</th>
+        <th>Índice de Servicio (I=t/T)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+    </main>
   <script src="script.js"></script>
 </body>
 
