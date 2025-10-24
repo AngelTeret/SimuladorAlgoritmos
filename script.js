@@ -402,13 +402,11 @@ function updateAlgorithmHistoryHighlight() {
   }
 }
 
-  // Events
+ // Events
 
-  // Eventos para limpiar tablas
 clearSampleBtn.addEventListener('click', () => {
-  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulacion esta en curso.'); return; }
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
   processes = processes.filter(p => !p.isExample);
-  pidCounter = 1; // Opcional: reiniciar el contador si solo quedan manuales
   renderProcTables();
   renderLegend();
   drawGantt();
@@ -416,23 +414,25 @@ clearSampleBtn.addEventListener('click', () => {
 });
 
 clearManualBtn.addEventListener('click', () => {
-  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulacion esta en curso.'); return; }
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
   processes = processes.filter(p => p.isExample);
-  pidCounter = 1; // Opcional: reiniciar el contador para que los nuevos empiecen desde P1
+  if (processes.length === 0) {
+      pidCounter = 1; 
+  }
   renderProcTables();
   renderLegend();
   drawGantt();
   showModal('Procesos Eliminados', 'Los procesos **manuales** han sido eliminados.');
 });
 
- addBtn.addEventListener('click', (e) => {
+addBtn.addEventListener('click', (e) => {
   e.preventDefault();
   const name = pname.value.trim() || (`P${pidCounter}`);
   const burst = parseInt(pburst.value,10) || 1;
   const arrival = parseInt(parrival.value,10) || 0;
   const q = pquantum && pquantum.value ? Math.max(1, parseInt(pquantum.value,10)) : null;
   addProcess(name, burst, arrival, q, false);
-  pname.value = ''; pburst.value = '4'; parrival.value = '0'; if(pquantum) pquantum.value = '';
+  pname.value = ''; pburst.value = '3'; parrival.value = '0'; if(pquantum) pquantum.value = '';
 });
 
 
@@ -453,7 +453,7 @@ modalClose.addEventListener('click', ()=> modal.classList.add('hidden'));
 
 function showModal(title, msg){
   modalTitle.textContent = title;
-  modalMsg.textContent = msg;
+  modalMsg.textContent = msg; 
   modal.classList.remove('hidden');
 }
 
@@ -461,27 +461,31 @@ function showModal(title, msg){
 
   startBtn.addEventListener('click', ()=>{
     if(isRunning) return;
-    if(processes.length === 0){ alert('Agrega al menos un proceso.'); return; }
+    if(processes.length === 0){ showModal('Error', 'Agrega al menos un proceso.'); return; }
     processes.forEach(p => { p.remaining = p.burst; p.segments = []; p.startedAt = null; p.completedAt = null; p._rrCounter = null; });
     processes.sort((a,b) => a.arrival - b.arrival || a.pid - b.pid);
     simTime = 0; algorithm = algorithmEl.value; defaultQuantum = parseInt(defaultQuantumEl.value,10) || 2;
-    speedEl.value = '3000';
-    readyQueue = []; processes.forEach(p => { if(p.arrival === 0 && (algorithm==='FCFS'||algorithm==='RR')) enqueueReady(p); });
+    readyQueue = []; 
+    
     isRunning = true; runSimulationInterval();
-    addBtn.disabled = true; addSampleBtn.disabled = true; algorithmEl.disabled = true; defaultQuantumEl.disabled = true; startBtn.disabled = true; pauseBtn.textContent = 'Pausar';
-    console.log('Simulacion iniciada. Algoritmo:', algorithm);
+    addBtn.disabled = true; addSampleBtn.disabled = true; algorithmEl.disabled = true; startBtn.disabled = true;
+    clearManualBtn.disabled = true; clearSampleBtn.disabled = true; 
+    console.log('Simulación iniciada. Algoritmo:', algorithm);
+    
   });
 
   pauseBtn.addEventListener('click', ()=>{
     if(!isRunning) return;
-    if(!simTimer){ runSimulationInterval(); pauseBtn.textContent = 'Pausar'; console.log('Reanudada'); }
-    else { clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null; pauseBtn.textContent = 'Continuar'; console.log('Pausada'); }
+    if(!simTimer){ runSimulationInterval(); pauseBtn.textContent = 'Pause'; console.log('Reanudar'); }
+    else { clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null; pauseBtn.textContent = 'Resume'; console.log('Pausada'); }
   });
 
   resetBtn.addEventListener('click', ()=>{
     clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null;
     addBtn.disabled = false; addSampleBtn.disabled = false; algorithmEl.disabled = false; startBtn.disabled = false;
-    pauseBtn.textContent = 'Pausar'; defaultQuantumEl.disabled = false; resetSimulationState();
+    clearManualBtn.disabled = false; clearSampleBtn.disabled = false; 
+    pauseBtn.textContent = 'Pause'; 
+    efficiencyTable.innerHTML = ''; 
   });
 
   // inicializar demo
@@ -491,6 +495,5 @@ function showModal(title, msg){
   renderProcTables(); 
   renderLegend(); drawGantt(); window.addEventListener('resize', ()=> drawGantt());
   console.log('Script cargado correctamente.');
-
-  });
+});
 
