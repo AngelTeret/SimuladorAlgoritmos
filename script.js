@@ -14,7 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const pquantum = $('pquantum'); // opcional
   const addBtn = mustHave('addProc');
   const addSampleBtn = mustHave('addSample');
-  const procTableBody = document.querySelector('#procTable tbody');
   const algorithmEl = mustHave('algorithm');
   const defaultQuantumEl = mustHave('defaultQuantum');
   const speedEl = mustHave('speed');
@@ -26,19 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const currentProcPill = mustHave('currentProcPill');
   const readyCount = mustHave('readyCount');
   const readyList = mustHave('readyList');
-  const historyTableBody = document.querySelector('#historyTable tbody');
   const ganttCanvas = mustHave('gantt');
   const legendDiv = mustHave('legend');
   const procTableExample = document.querySelector('#procTableExample tbody');
   const procTableManual = document.querySelector('#procTableManual tbody');
   const clearSampleBtn = mustHave('clearSampleBtn');
   const clearManualBtn = mustHave('clearManualBtn');
-
+  const algorithmHistory = document.getElementById('algorithmHistory');
+  const efficiencyTable = document.querySelector('#efficiencyTable tbody');
 
   // check
-  const critical = [pname,pburst,parrival,addBtn,procTableBody,algorithmEl,defaultQuantumEl,
-    speedEl,startBtn,pauseBtn,resetBtn,timeDisplay,unitBar,currentProcPill,
-    readyCount,readyList,historyTableBody,ganttCanvas,legendDiv, addSampleBtn];
+  const critical = [pname,pburst,parrival,addBtn,algorithmEl,defaultQuantumEl,
+  speedEl,startBtn,pauseBtn,resetBtn,timeDisplay,unitBar,currentProcPill,
+  readyCount,readyList,ganttCanvas,legendDiv, addSampleBtn];
   if (critical.some(x => !x)) {
     alert('Faltan elementos en la página. Revisa la consola (F12).');
     return;
@@ -69,8 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     timeDisplay.textContent = `t = ${simTime}`;
     unitBar.style.transition = 'none'; unitBar.style.width = '0%';
     currentProcPill.textContent = 'CPU: --';
-    historyTableBody.innerHTML = '';
-    drawGantt(); renderReadyList(); renderHistory(); renderLegend();
+    if(algorithmHistory) algorithmHistory.innerHTML = ''; 
+    drawGantt(); renderReadyList();  renderLegend();
     console.log('Simulación reiniciada.');
   }
 
@@ -90,7 +89,6 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProcTables(); renderLegend();
 }
 
-
   function renderProcTables() {
   procTableExample.innerHTML = '';
   procTableManual.innerHTML = '';
@@ -104,14 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 }
 
-
   function renderLegend(){
     legendDiv.innerHTML = '';
     processes.forEach(p => {
       const div = document.createElement('div');
       div.className = 'item';
       div.innerHTML = `<div style="width:14px;height:14px;border-radius:4px;background:${p.color};margin-right:8px"></div>
-                       <div style="color:var(--muted)">${p.name} (PID:${p.pid})</div>`;
+                      <div style="color:var(--muted)">${p.name} (PID:${p.pid})</div>`;
       legendDiv.appendChild(div);
     });
   }
@@ -121,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let nodes = [];
     if(algorithm === 'FCFS' || algorithm === 'RR'){ nodes = readyQueue.slice(); }
     else { nodes = processes.filter(p => p.remaining>0 && p.arrival <= simTime && !p.completedAt && p !== current);
-           nodes.sort((a,b) => a.remaining - b.remaining || a.arrival - b.arrival || a.pid - b.pid); }
+          nodes.sort((a,b) => a.remaining - b.remaining || a.arrival - b.arrival || a.pid - b.pid); }
     nodes.forEach(p => {
       const d = document.createElement('div');
       d.className = 'queue-item';
@@ -131,21 +128,6 @@ document.addEventListener('DOMContentLoaded', () => {
       readyList.appendChild(d);
     });
     readyCount.textContent = `Lista: ${nodes.length}`;
-  }
-
-  function renderHistory(){
-    historyTableBody.innerHTML = '';
-    const byPid = processes.slice().sort((a,b)=>a.pid-b.pid);
-    byPid.forEach(p => {
-      const start = p.startedAt != null ? p.startedAt : '-';
-      const end = p.completedAt != null ? p.completedAt : '-';
-      const turnaround = (p.completedAt != null) ? (p.completedAt - p.arrival) : '-';
-      const waiting = (p.completedAt != null) ? ((p.completedAt - p.arrival) - p.burst) : '-';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${p.pid}</td><td>${p.name}</td><td>${p.arrival}</td><td>${p.burst}</td>
-                      <td>${start}</td><td>${end}</td><td>${turnaround}</td><td>${waiting}</td>`;
-      historyTableBody.appendChild(tr);
-    });
   }
 
   function drawGantt(){
@@ -205,21 +187,23 @@ document.addEventListener('DOMContentLoaded', () => {
   function removeFromReady(p){ const i = readyQueue.indexOf(p); if(i>=0) readyQueue.splice(i,1); }
 
   function tick(){
-    processes.forEach(p => { if(p.arrival === simTime){ if(algorithm === 'FCFS' || algorithm === 'RR') enqueueReady(p); } });
-
     if(algorithm === 'FCFS' || algorithm === 'SJF'){
+      if(algorithm === 'FCFS') {
+          processes.forEach(p => { if(p.arrival === simTime){ enqueueReady(p); } });
+      }
+
       if(!current){
         if(algorithm === 'FCFS'){
           if(readyQueue.length === 0){
             processes.forEach(p=>{ if(p.arrival <= simTime && p.remaining>0 && !p.completedAt && !readyQueue.includes(p)) enqueueReady(p); });
           }
           current = readyQueue.shift() || null;
-        } else {
+        } else { // SJF
           const cand = processes.filter(p => p.arrival <= simTime && p.remaining>0 && !p.completedAt);
           if(cand.length){
             cand.sort((a,b)=> (a.burst - b.burst) || (a.arrival - b.arrival) || (a.pid - b.pid));
             current = cand[0];
-            removeFromReady(current);
+            removeFromReady(current); 
           }
         }
         if(current){ if(current.startedAt === null) current.startedAt = simTime; current.segments.push({start: simTime, end: null}); }
@@ -250,21 +234,45 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
     } else if(algorithm === 'RR'){
-      processes.forEach(p => { if(p.arrival === simTime) enqueueReady(p); });
+      processes.forEach(p => { 
+        if(p.arrival === simTime) {
+          enqueueReady(p); 
+        }
+      });
+      if(current && current._rrCounter !== null && current._rrCounter <= 0){
+        const seg = current.segments[current.segments.length - 1]; 
+        if(seg) seg.end = simTime;
+        enqueueReady(current);    
+        current._rrCounter = null; 
+        current = null;            
+      }
+
       if(!current){
         current = readyQueue.shift() || null;
-        if(current){ if(current.startedAt === null) current.startedAt = simTime; current._rrCounter = current.quantum || parseInt(defaultQuantumEl.value || defaultQuantum,10); current.segments.push({start: simTime, end: null}); }
+        if(current){ 
+          if(current.startedAt === null) current.startedAt = simTime; 
+          current._rrCounter = current.quantum || parseInt(defaultQuantumEl.value || defaultQuantum,10); 
+          current.segments.push({start: simTime, end: null}); 
+        }
       }
+
       if(current){
-        current.remaining -= 1; current._rrCounter -= 1;
-        if(current.remaining <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; current.completedAt = simTime + 1; current._rrCounter = null; current = null; }
-        else if(current._rrCounter <= 0){ const seg = current.segments[current.segments.length - 1]; seg.end = simTime + 1; enqueueReady(current); current._rrCounter = null; current = null; }
+        current.remaining -= 1; 
+        current._rrCounter -= 1; 
+
+        if(current.remaining <= 0){ 
+          const seg = current.segments[current.segments.length - 1]; 
+          seg.end = simTime + 1; 
+          current.completedAt = simTime + 1; 
+          current._rrCounter = null; 
+          current = null; 
+        }
       }
     }
 
     timeDisplay.textContent = `t = ${simTime}`;
     currentProcPill.textContent = current ? `CPU: ${current.name} (PID:${current.pid}) Rem:${current.remaining}` : 'CPU: --';
-    renderReadyList(); renderHistory(); drawGantt();
+    renderReadyList(); drawGantt();
     simTime += 1;
   }
 
@@ -285,23 +293,120 @@ document.addEventListener('DOMContentLoaded', () => {
     simTimer = setInterval(step, unitDuration);
   }
 
- function stopSimulation(finished=false){
+function stopSimulation(finished=false){
   clearInterval(simTimer); simTimer = null;
   clearTimeout(animTimer); animTimer = null;
-  isRunning = false; current = null;
-  renderReadyList(); renderHistory(); drawGantt();
-
-  if(finished){
-    showModal("Simulación Finalizada", "Todos los procesos fueron ejecutados. Presione Resetear para una nueva Operación :) ");
+  isRunning = false; 
+  
+  if (!finished && current) { 
+    const seg = current.segments[current.segments.length - 1]; 
+    if(seg && seg.end === null) seg.end = simTime; 
   }
+  
+  current = null; 
+  renderReadyList(); drawGantt();
+
+if (finished) {
+  const algorithm = document.getElementById('algorithm').value;
+  const quantum = document.getElementById('defaultQuantum').value;
+  showEfficiencyTable(algorithm, quantum);
+  showModal("✅ Simulación Finalizada", "Consulta la tabla de eficiencia y el historial para comparar el rendimiento de los algoritmos.");
+}
 }
 
+function showEfficiencyTable(algorithm, quantum = null) {
+  efficiencyTable.innerHTML = '';
+
+  let totalI = 0;
+  
+  if (processes.length === 0) return; // Evitar división por cero
+
+  processes.forEach(p => {
+    const tf = p.completedAt;
+    const ti = p.arrival;
+    const t = p.burst;
+    const T = tf - ti;
+    const Te = T - t;
+    const I = (T > 0) ? (t / T).toFixed(2) : 0; // Evitar división por cero si T=0
+    totalI += parseFloat(I);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>${ti}</td>
+      <td>${t}</td>
+      <td>${tf}</td>
+      <td>${T}</td>
+      <td>${Te}</td>
+      <td>${I}</td>
+    `;
+    efficiencyTable.appendChild(tr);
+  });
+
+  // 🔹 Calcular el promedio del índice I
+  const promedioI = (totalI / processes.length).toFixed(2);
+
+  // 🔹 Resaltar el proceso más eficiente
+  const rows = Array.from(efficiencyTable.querySelectorAll('tr'));
+  if(rows.length > 0) { // Asegurarse de que haya filas
+    let best = rows.reduce((bestRow, row) => {
+      const val = parseFloat(row.children[6].textContent);
+      const bestVal = parseFloat(bestRow.children[6].textContent);
+      return val > bestVal ? row : bestRow;
+    }, rows[0]);
+    best.classList.add('highlight');
+  }
+
+  // 🔹 Agregar resultado al historial del algoritmo
+  const li = document.createElement('li');
+  const qText = algorithm === 'RR' ? ` (Quantum = ${quantum})` : '';
+  li.textContent = `${algorithm}${qText} → Eficiencia promedio: ${promedioI}`;
+  
+  // ¡NUEVO! Guardar el valor numérico para compararlo
+  li.dataset.efficiency = promedioI; 
+  
+  algorithmHistory.appendChild(li);
+
+  // ¡NUEVO! Llamar a la función que resalta el mejor
+  updateAlgorithmHistoryHighlight();
+}
+
+
+function addAlgorithmHistory(name, quantum = null) {
+  const li = document.createElement('li');
+  const qText = quantum ? ` (Quantum = ${quantum})` : '';
+  li.textContent = `Ejecutado algoritmo ${name}${qText}`;
+  algorithmHistory.appendChild(li);
+}
+
+function updateAlgorithmHistoryHighlight() {
+  const items = algorithmHistory.querySelectorAll('li');
+  if (items.length === 0) return;
+
+  let bestItem = null;
+  let maxEfficiency = -1; 
+
+  items.forEach(item => {
+    item.classList.remove('highlight-best'); 
+    
+    const efficiency = parseFloat(item.dataset.efficiency);
+    
+    if (efficiency > maxEfficiency) {
+      maxEfficiency = efficiency;
+      bestItem = item;
+    }
+  });
+
+  if (bestItem) {
+    bestItem.classList.add('highlight-best');
+  }
+}
 
   // Events
 
   // Eventos para limpiar tablas
 clearSampleBtn.addEventListener('click', () => {
-  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulacion esta en curso.'); return; }
   processes = processes.filter(p => !p.isExample);
   pidCounter = 1; // Opcional: reiniciar el contador si solo quedan manuales
   renderProcTables();
@@ -311,7 +416,7 @@ clearSampleBtn.addEventListener('click', () => {
 });
 
 clearManualBtn.addEventListener('click', () => {
-  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulación está en curso.'); return; }
+  if (isRunning) { showModal('Advertencia', 'No puedes eliminar procesos mientras la simulacion esta en curso.'); return; }
   processes = processes.filter(p => p.isExample);
   pidCounter = 1; // Opcional: reiniciar el contador para que los nuevos empiecen desde P1
   renderProcTables();
@@ -360,22 +465,23 @@ function showModal(title, msg){
     processes.forEach(p => { p.remaining = p.burst; p.segments = []; p.startedAt = null; p.completedAt = null; p._rrCounter = null; });
     processes.sort((a,b) => a.arrival - b.arrival || a.pid - b.pid);
     simTime = 0; algorithm = algorithmEl.value; defaultQuantum = parseInt(defaultQuantumEl.value,10) || 2;
+    speedEl.value = '3000';
     readyQueue = []; processes.forEach(p => { if(p.arrival === 0 && (algorithm==='FCFS'||algorithm==='RR')) enqueueReady(p); });
     isRunning = true; runSimulationInterval();
-    addBtn.disabled = true; addSampleBtn.disabled = true; algorithmEl.disabled = true; startBtn.disabled = true;
-    console.log('Simulación iniciada. Algoritmo:', algorithm);
+    addBtn.disabled = true; addSampleBtn.disabled = true; algorithmEl.disabled = true; defaultQuantumEl.disabled = true; startBtn.disabled = true; pauseBtn.textContent = 'Pausar';
+    console.log('Simulacion iniciada. Algoritmo:', algorithm);
   });
 
   pauseBtn.addEventListener('click', ()=>{
     if(!isRunning) return;
-    if(!simTimer){ runSimulationInterval(); pauseBtn.textContent = 'Pause'; console.log('Reanudar'); }
-    else { clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null; pauseBtn.textContent = 'Resume'; console.log('Pausada'); }
+    if(!simTimer){ runSimulationInterval(); pauseBtn.textContent = 'Pausar'; console.log('Reanudada'); }
+    else { clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null; pauseBtn.textContent = 'Continuar'; console.log('Pausada'); }
   });
 
   resetBtn.addEventListener('click', ()=>{
     clearInterval(simTimer); simTimer = null; clearTimeout(animTimer); animTimer = null;
     addBtn.disabled = false; addSampleBtn.disabled = false; algorithmEl.disabled = false; startBtn.disabled = false;
-    pauseBtn.textContent = 'Pause'; resetSimulationState();
+    pauseBtn.textContent = 'Pausar'; defaultQuantumEl.disabled = false; resetSimulationState();
   });
 
   // inicializar demo
@@ -387,3 +493,4 @@ function showModal(title, msg){
   console.log('Script cargado correctamente.');
 
   });
+
