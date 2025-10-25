@@ -1,27 +1,28 @@
 # Simulador de Procesos — Algoritmos de Planificación
 
 ## Descripción del Proyecto
-Este proyecto es un **simulador interactivo de planificación de procesos**, diseñado para representar cómo un sistema operativo gestiona la ejecución de procesos mediante distintos **algoritmos de planificación de CPU**.  
+Este proyecto es un **simulador interactivo de planificación de procesos**, que representa cómo un sistema operativo gestiona la ejecución de procesos mediante distintos **algoritmos de planificación de CPU**.  
 
-El sistema permite agregar procesos, definir sus tiempos de llegada y ráfagas de CPU, y luego observar su ejecución visualmente bajo diferentes políticas de planificación.  
+El sistema permite agregar procesos, definir sus tiempos de llegada y ráfagas de CPU, y observar su ejecución visualmente bajo diferentes políticas de planificación.  
 Cada unidad de tiempo equivale a **3 segundos**, lo que facilita observar el comportamiento del CPU y la cola de listos en tiempo real.
 
 El simulador incluye:
-- Implementación de los algoritmos **FCFS (First Come, First Served)**, **SJF (Shortest Job First)** y **Round Robin**.
-- Control del tiempo de simulación (cada unidad = 3 segundos).
-- Visualización dinámica del proceso en ejecución y la cola de listos.
-- Ejecución con distintos algoritmos reutilizando los mismos procesos cargados.
-- Presentación de la **tabla de eficiencia** con tiempos de espera, retorno y el proceso más eficiente.
-- Configuración del **quantum** para Round Robin.
+- Implementación de los algoritmos **FCFS (First Come, First Served)**, **SJF (Shortest Job First)** y **Round Robin**.  
+- Control del tiempo de simulación (cada unidad = 3 segundos).  
+- Visualización dinámica del proceso en ejecución y la cola de listos.  
+- Ejecución con distintos algoritmos reutilizando los mismos procesos cargados.  
+- Presentación de la **tabla de eficiencia** con tiempos de espera, retorno y el proceso más eficiente.  
+- Configuración del **quantum** para Round Robin.  
 
 ---
 
 ## Tecnologías Utilizadas
-- **Java (Swing)** → Interfaz gráfica de usuario, control de simulación y lógica de planificación.  
-- **Java AWT / Threading** → Control de tiempo de ejecución (simulación de 3 segundos por unidad).  
-- **POO (Programación Orientada a Objetos)** → Diseño modular para representar procesos, CPU y algoritmos.  
+- **JavaScript** → Lógica principal del simulador y control de los algoritmos de planificación.  
+- **HTML5** → Estructura del entorno visual e interfaz de usuario.  
+- **CSS3** → Diseño, colores y animaciones del simulador.  
+- **DOM Manipulation & setTimeout / setInterval** → Control del tiempo y simulación paso a paso.  
 
-El proyecto fue desarrollado **como aplicación de escritorio**, evitando el uso de consola o frameworks externos.
+El proyecto fue desarrollado **como aplicación web**, sin necesidad de instalar software adicional ni usar frameworks externos.
 
 ---
 
@@ -33,9 +34,8 @@ git clone https://github.com/AngelTeret/SimuladorAlgoritmos
 ```
 
 ### 2. Abrir el Proyecto
-- Abrir el proyecto en **NetBeans**, **IntelliJ IDEA** o **Eclipse**.  
-- Asegurarse de tener instalado **Java JDK 17 o superior**.  
-- Compilar y ejecutar el archivo principal del simulador (por ejemplo, `Main.java` o `SimuladorProcesos.java`).
+- Abrir la carpeta del proyecto con tu editor preferido (**VS Code**, **Sublime Text**, etc.).  
+- No requiere compilación. Solo abre el archivo **`index.html`** en tu navegador.  
 
 ### 3. Uso del Simulador
 
@@ -49,7 +49,7 @@ git clone https://github.com/AngelTeret/SimuladorAlgoritmos
 
 3. **Iniciar simulación**  
    - Presionar **“Iniciar”** para comenzar la ejecución.  
-   - Cada unidad de tiempo dura **3 segundos**, lo que permite observar la ejecución paso a paso.
+   - Cada unidad de tiempo dura **3 segundos**, permitiendo observar la ejecución paso a paso.
 
 4. **Visualización y resultados**  
    - Se muestra en pantalla el proceso actual en ejecución, la cola de listos y los tiempos restantes.  
@@ -65,10 +65,8 @@ Imágenes alojadas en Google Drive en los siguientes enlaces:
 - [Ejecución FCFS y cola de procesos](https://drive.google.com/drive/folders/1AY3Vt_kykpM8u8netQ0ggp3LMH-hUVB0?usp=sharing)  
 - [Tabla de eficiencia y algoritmo Round Robin](https://drive.google.com/drive/folders/1iXTLuSTEltw822aS4AOtkJWvSrMuHz0q?usp=sharing)  
 
-
 ---
 
 ## Autor
-Proyecto desarrollado por el Grupo No. 4, como parte del **Proyecto Final de Sistemas Operativos**.  
- 
+Proyecto desarrollado por el **Grupo No. 4**, como parte del **Proyecto Final de Sistemas Operativos**. 
 
