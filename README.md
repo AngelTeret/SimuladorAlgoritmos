@@ -1,26 +1,27 @@
-# Simulador de Planificación de Procesos
+# Simulador de Procesos — Algoritmos de Planificación
 
 ## Descripción del Proyecto
-Este proyecto es un simulador interactivo que representa la gestión de procesos en un sistema operativo, implementando **algoritmos de planificación de CPU** expropiativos y no expropiativos.  
-Permite crear procesos manualmente o usar procesos de ejemplo, definiendo su tiempo en CPU, instante de llegada y quantum (cuando aplica). El simulador muestra cómo los procesos se ejecutan según el algoritmo seleccionado.
+Este proyecto es un **simulador interactivo de planificación de procesos**, diseñado para representar cómo un sistema operativo gestiona la ejecución de procesos mediante distintos **algoritmos de planificación de CPU**.  
+
+El sistema permite agregar procesos, definir sus tiempos de llegada y ráfagas de CPU, y luego observar su ejecución visualmente bajo diferentes políticas de planificación.  
+Cada unidad de tiempo equivale a **3 segundos**, lo que facilita observar el comportamiento del CPU y la cola de listos en tiempo real.
 
 El simulador incluye:
-- Elección de algoritmo de planificación: FCFS, SJF, SRTF, Round Robin.
-- Visualización de la cola de procesos listos y del proceso en ejecución.
-- Historial de procesos ejecutados con tiempos de inicio, fin, turnaround y espera.
-- Gantt Chart en tiempo real para visualizar la ejecución de procesos.
-- Control de simulación: iniciar, pausar y reiniciar.
-- Asignación automática de PID y colores para cada proceso.
-- Generación de procesos de ejemplo y posibilidad de agregar procesos manuales.
+- Implementación de los algoritmos **FCFS (First Come, First Served)**, **SJF (Shortest Job First)** y **Round Robin**.
+- Control del tiempo de simulación (cada unidad = 3 segundos).
+- Visualización dinámica del proceso en ejecución y la cola de listos.
+- Ejecución con distintos algoritmos reutilizando los mismos procesos cargados.
+- Presentación de la **tabla de eficiencia** con tiempos de espera, retorno y el proceso más eficiente.
+- Configuración del **quantum** para Round Robin.
 
 ---
 
 ## Tecnologías Utilizadas
-- HTML → Estructura de la interfaz y elementos del simulador.
-- CSS → Estilos y diseño responsivo.
-- JavaScript → Lógica de simulación, algoritmos de planificación, animaciones y actualización en tiempo real.
+- **Java (Swing)** → Interfaz gráfica de usuario, control de simulación y lógica de planificación.  
+- **Java AWT / Threading** → Control de tiempo de ejecución (simulación de 3 segundos por unidad).  
+- **POO (Programación Orientada a Objetos)** → Diseño modular para representar procesos, CPU y algoritmos.  
 
-Nota: Se utilizó **JavaScript puro**, sin frameworks ni librerías externas.
+El proyecto fue desarrollado **como aplicación de escritorio**, evitando el uso de consola o frameworks externos.
 
 ---
 
@@ -32,44 +33,41 @@ git clone https://github.com/AngelTeret/SimuladorAlgoritmos
 ```
 
 ### 2. Abrir el Proyecto
-- Ubicarse en la carpeta clonada:
-```bash
-cd SimuladorAlgoritmos
-```
-- Abrir el archivo `index.html` en cualquier navegador moderno (Chrome, Firefox, Edge, etc.).
+- Abrir el proyecto en **NetBeans**, **IntelliJ IDEA** o **Eclipse**.  
+- Asegurarse de tener instalado **Java JDK 17 o superior**.  
+- Compilar y ejecutar el archivo principal del simulador (por ejemplo, `Main.java` o `SimuladorProcesos.java`).
 
 ### 3. Uso del Simulador
-1. **Agregar un proceso manualmente**  
-   - Ingresar un nombre (opcional).  
-   - Definir tiempo en CPU (burst).  
-   - Indicar instante de llegada.  
-   - Definir quantum si se usa Round Robin.  
-   - Presionar "Agregar Proceso".
 
-2. **Agregar procesos de ejemplo**  
-   - Presionar "Agregar Procesos de Ejemplo" para cargar automáticamente un conjunto de procesos predeterminados.
+1. **Agregar procesos manualmente**  
+   - Ingresar el **nombre del proceso**, su **instante de llegada** y **tiempo en CPU**.  
+   - Presionar el botón **“Agregar Proceso”** antes de iniciar la simulación.
 
-3. **Control de simulación**  
-   - **Iniciar**: comienza la simulación.  
-   - **Pausar/Resume**: pausa o reanuda la simulación.  
-   - **Reiniciar**: reinicia la simulación y los estados de los procesos.
+2. **Seleccionar algoritmo de planificación**  
+   - Elegir entre **FCFS**, **SJF** o **Round Robin**.  
+   - Si se selecciona Round Robin, ingresar el **valor del quantum**.
 
-4. **Visualización**  
-   - **CPU actual**: muestra el proceso que se está ejecutando y su tiempo restante.  
-   - **Cola de listos**: lista de procesos que esperan su turno.  
-   - **Historial**: muestra los tiempos de inicio, fin, turnaround y espera de cada proceso.  
-   - **Gantt Chart**: diagrama que representa gráficamente la ejecución de los procesos.
+3. **Iniciar simulación**  
+   - Presionar **“Iniciar”** para comenzar la ejecución.  
+   - Cada unidad de tiempo dura **3 segundos**, lo que permite observar la ejecución paso a paso.
+
+4. **Visualización y resultados**  
+   - Se muestra en pantalla el proceso actual en ejecución, la cola de listos y los tiempos restantes.  
+   - Al finalizar, se despliega la **tabla de eficiencia**, destacando el proceso más eficiente.  
+   - Es posible **reiniciar o ejecutar otro algoritmo** reutilizando los mismos procesos cargados.
 
 ---
 
 ## Capturas de Pantalla del Funcionamiento
 Imágenes alojadas en Google Drive en los siguientes enlaces:
 
-- [Vista General del Simulador](https://drive.google.com/drive/folders/1sHdWfEuunckYnO1qj8WFGDXqI1uRekJP?usp=sharing)  
-- [Cola de Procesos y CPU](https://drive.google.com/drive/folders/1eUkPel3pEN3w7CPmYx4YuRoPKRsRLmBp?usp=sharing)  
-- [Gantt Chart y Historial](https://drive.google.com/drive/folders/1r7E6IJdMCyojWOmeKibzv2YV8QslhhPT?usp=sharing)
+- [Vista general del simulador](https://drive.google.com/drive/folders/1Oy5E4EJfTDH_EoZOwk5iCranLGzYkEq6?usp=sharing)  
+- [Ejecución FCFS y cola de procesos](https://drive.google.com/drive/folders/1AY3Vt_kykpM8u8netQ0ggp3LMH-hUVB0?usp=sharing)  
+- [Tabla de eficiencia y algoritmo Round Robin](https://drive.google.com/drive/folders/1iXTLuSTEltw822aS4AOtkJWvSrMuHz0q?usp=sharing)  
+
 
 ---
 
 ## Autor
-Proyecto desarrollado por el **grupo No.4**, según los requerimientos del Proyecto 2 del curso de Sistemas Operativos.
+Proyecto desarrollado por el **Grupo No. 4, como parte del **Proyecto Final de Sistemas Operativos**.  
+ 
