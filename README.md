@@ -69,5 +69,6 @@ Imágenes alojadas en Google Drive en los siguientes enlaces:
 ---
 
 ## Autor
-Proyecto desarrollado por el **Grupo No. 4, como parte del **Proyecto Final de Sistemas Operativos**.  
+Proyecto desarrollado por el Grupo No. 4, como parte del **Proyecto Final de Sistemas Operativos**.  
  
+
